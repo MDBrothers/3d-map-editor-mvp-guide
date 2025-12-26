@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Comprehensive documentation for building a 3D Map Editor MVP with Vulkan, featuring dual camera modes and procedural API">
+    <meta name="keywords" content="3D Map Editor, Vulkan, MVP, Game Development, Procedural API, Documentation">
+    <meta name="author" content="3D Map Editor Team">
+    <title>3D Map Editor MVP Guide - Version 9.0</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="home-link">
+                <a href="index.html">🏠 3D Map Editor MVP Guide</a>
+            </div>
+            <div class="nav-links">
+                <a href="#quick-start">Quick Start</a>
+                <a href="#table-of-contents">Table of Contents</a>
+                <a href="pages/01-executive-summary.html" class="btn">Start Reading →</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h1>3D Map Editor MVP Guide</h1>
+            <p>Comprehensive Documentation for Building a Professional 3D Map Editor</p>
+            <span class="version-badge">Version 9.0</span>
+        </div>
+
+        <section id="executive-summary">
+            <h2>Executive Summary</h2>
+            <p>Welcome to the 3D Map Editor MVP Guide, a comprehensive resource for building a production-ready 3D map editor from the ground up. This guide emphasizes two critical principles that set it apart from typical MVP approaches:</p>
+            
+            <div class="card">
+                <h3>🎯 Critical Design Principles</h3>
+                <ul>
+                    <li><strong>Procedural API First:</strong> Every user action must be accessible through a procedural API. This ensures that the editor can be tested, automated, and scripted without manual intervention.</li>
+                    <li><strong>Test-Driven Architecture:</strong> The architecture is designed to enable automatic testing without human intervention. All functionality can be verified programmatically.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>🏗️ MVP Focus Areas</h3>
+                <ul>
+                    <li><strong>7 Modular Building Components:</strong> Walls, floors, stairs, windows, railings, skylights, and roofs</li>
+                    <li><strong>Dual Camera Modes:</strong> First-person (FPS) and third-person (TPS) perspectives</li>
+                    <li><strong>Component Placement:</strong> Intuitive placement system with automatic snapping</li>
+                    <li><strong>Basic Lighting System:</strong> Essential lighting for scene visualization</li>
+                    <li><strong>Simple Environment:</strong> Ground plane and basic sky</li>
+                    <li><strong>Essential Editor Tools:</strong> Transform, select, and manipulation tools</li>
+                    <li><strong>Procedural API Foundation:</strong> Complete API for all editor operations</li>
+                    <li><strong>Comprehensive Automated Testing:</strong> Full test coverage for all features</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="quick-start">
+            <h2>Quick Start Guide</h2>
+            <p>New to this guide? Here's how to get started:</p>
+            
+            <div class="quick-start-grid">
+                <div class="card">
+                    <h3>📚 Start with Fundamentals</h3>
+                    <p>Begin with the <a href="pages/01-executive-summary.html">Executive Summary</a> to understand the project vision, then explore the foundational considerations (pages 2-18).</p>
+                </div>
+                
+                <div class="card">
+                    <h3>🧪 Understand Testing</h3>
+                    <p>Review the <a href="pages/19-test-driven-development.html">Test-Driven Development</a> section (pages 19-22) to grasp the testing philosophy.</p>
+                </div>
+                
+                <div class="card">
+                    <h3>🚀 Follow the Phases</h3>
+                    <p>Implement the project using the <a href="pages/23-development-plan-overview.html">Phased Development Plan</a> (pages 23-34) which breaks down the work into manageable steps.</p>
+                </div>
+                
+                <div class="card">
+                    <h3>🔮 Plan for the Future</h3>
+                    <p>Explore the <a href="pages/35-post-mvp-roadmap.html">Post-MVP Roadmap</a> (page 35) to see what comes after the initial release.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="table-of-contents">
+            <h2>Complete Table of Contents</h2>
+            
+            <div class="toc">
+                <div class="toc-section">
+                    <h3>Part I: Executive Summary & Foundational Considerations</h3>
+                    <ul>
+                        <li><a href="pages/01-executive-summary.html">1. Executive Summary</a></li>
+                        <li><a href="pages/02-foundational-considerations.html">2. Foundational Considerations Overview</a></li>
+                        <li><a href="pages/03-coordinate-system.html">3. Coordinate System and Units</a></li>
+                        <li><a href="pages/04-error-handling.html">4. Error Handling and Validation</a></li>
+                        <li><a href="pages/05-asset-management.html">5. Asset Management</a></li>
+                        <li><a href="pages/06-performance-metrics.html">6. Performance Metrics and Profiling</a></li>
+                        <li><a href="pages/07-settings-management.html">7. Settings Management</a></li>
+                        <li><a href="pages/08-scene-hierarchy.html">8. Scene Hierarchy and Entity Management</a></li>
+                        <li><a href="pages/09-coordinate-spaces.html">9. Coordinate Spaces and Transforms</a></li>
+                        <li><a href="pages/10-serialization-versioning.html">10. Serialization and Versioning</a></li>
+                        <li><a href="pages/11-extensibility.html">11. Extensibility and Plugin Architecture</a></li>
+                        <li><a href="pages/12-input-management.html">12. Input Management System</a></li>
+                        <li><a href="pages/13-command-pattern.html">13. Command Pattern and Undo/Redo</a></li>
+                        <li><a href="pages/14-memory-management.html">14. Memory Management Strategy</a></li>
+                        <li><a href="pages/15-localization.html">15. Localization and Internationalization</a></li>
+                        <li><a href="pages/16-crash-recovery.html">16. Crash Recovery and Auto-Save</a></li>
+                        <li><a href="pages/17-documentation-as-code.html">17. Documentation as Code</a></li>
+                        <li><a href="pages/18-build-system.html">18. Build System and Dependencies</a></li>
+                    </ul>
+                </div>
+
+                <div class="toc-section">
+                    <h3>Part II: Test-Driven Development Architecture</h3>
+                    <ul>
+                        <li><a href="pages/19-test-driven-development.html">19. Test-Driven Development Principles</a></li>
+                        <li><a href="pages/20-testability-architecture.html">20. Testability Architecture</a></li>
+                        <li><a href="pages/21-test-suite-structure.html">21. Test Suite Structure</a></li>
+                        <li><a href="pages/22-continuous-integration.html">22. Continuous Integration and Automation</a></li>
+                    </ul>
+                </div>
+
+                <div class="toc-section">
+                    <h3>Part III: Phased Development Plan</h3>
+                    <ul>
+                        <li><a href="pages/23-development-plan-overview.html">23. Development Plan Overview</a></li>
+                        <li><a href="pages/24-phase-0-pre-development.html">24. Phase 0: Pre-Development Setup</a></li>
+                        <li><a href="pages/25-phase-1-vulkan-foundation.html">25. Phase 1: Vulkan Foundation</a></li>
+                        <li><a href="pages/26-phase-2-rendering.html">26. Phase 2: Basic Rendering Pipeline</a></li>
+                        <li><a href="pages/27-phase-3-component-system.html">27. Phase 3: Component System</a></li>
+                        <li><a href="pages/28-phase-4-placement-system.html">28. Phase 4: Placement System</a></li>
+                        <li><a href="pages/29-phase-5-transform-tools.html">29. Phase 5: Transform Tools</a></li>
+                        <li><a href="pages/30-phase-6-lighting-system.html">30. Phase 6: Lighting System</a></li>
+                        <li><a href="pages/31-phase-7-collision-detection.html">31. Phase 7: Collision Detection</a></li>
+                        <li><a href="pages/32-phase-8-save-load.html">32. Phase 8: Save/Load System</a></li>
+                        <li><a href="pages/33-phase-9-polish-testing.html">33. Phase 9: Polish and Testing</a></li>
+                        <li><a href="pages/34-phase-10-documentation-release.html">34. Phase 10: Documentation and Release</a></li>
+                    </ul>
+                </div>
+
+                <div class="toc-section">
+                    <h3>Part IV: Post-MVP Roadmap</h3>
+                    <ul>
+                        <li><a href="pages/35-post-mvp-roadmap.html">35. Post-MVP Features and Roadmap</a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="document-info">
+            <h2>Document Information</h2>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Attribute</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Version</strong></td>
+                            <td>9.0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Pages</strong></td>
+                            <td>35</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Technology Stack</strong></td>
+                            <td>Vulkan, C++, Modern OpenGL</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Target Platform</strong></td>
+                            <td>Windows, Linux, macOS</td>
+                        </tr>
+                        <tr>
+                            <td><strong>License</strong></td>
+                            <td>MIT License</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="about">
+            <h2>About This Guide</h2>
+            <p>This guide represents a comprehensive approach to building a 3D map editor that prioritizes:</p>
+            <ul>
+                <li><strong>Testability:</strong> Every feature is designed to be tested automatically</li>
+                <li><strong>Maintainability:</strong> Clean architecture and clear separation of concerns</li>
+                <li><strong>Scalability:</strong> Built to grow beyond the MVP</li>
+                <li><strong>Professional Quality:</strong> Production-ready code from day one</li>
+            </ul>
+            <p>Whether you're building this exact project or using it as a reference for your own 3D editor, this guide provides the foundational knowledge and architectural patterns you need to succeed.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p><strong>3D Map Editor MVP Guide - Version 9.0</strong></p>
+        <p>Comprehensive documentation for building a professional 3D map editor</p>
+        <p>&copy; 2024 3D Map Editor Team | <a href="https://github.com/MDBrothers/3d-map-editor-mvp-guide">GitHub Repository</a></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+</body>
+</html>

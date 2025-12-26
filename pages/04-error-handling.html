@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Error Handling and Validation - 3D Map Editor MVP Guide">
+    <title>Error Handling and Validation - 3D Map Editor MVP Guide</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="home-link">
+                <a href="../index.html">🏠 3D Map Editor MVP Guide</a>
+            </div>
+            <div class="nav-links">
+                <a href="03-coordinate-system.html">← Previous: Coordinate System</a>
+                <a href="05-asset-management.html">Next: Asset Management →</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <h1>4. Error Handling and Validation</h1>
+
+        <section id="introduction">
+            <h2>Introduction</h2>
+            <p>Robust error handling is critical for a reliable editor. Users will make mistakes, files will be corrupted, and systems will fail. How your application handles these situations determines whether users trust it with their work.</p>
+            
+            <div class="warning-box">
+                <strong>Core Principle:</strong> Never silently fail. Every error must be detectable, reportable, and ideally, recoverable.
+            </div>
+        </section>
+
+        <section id="error-strategy">
+            <h2>Error Handling Strategy</h2>
+
+            <h3>Result Type Pattern</h3>
+            <p><strong>Decision:</strong> Use a Result&lt;T, Error&gt; type for all operations that can fail.</p>
+
+            <div class="info-box">
+                <strong>Why Result Type?</strong>
+                <ul>
+                    <li>Forces error handling—compiler won't let you ignore errors</li>
+                    <li>No exception overhead in hot paths</li>
+                    <li>Explicit in function signatures which operations can fail</li>
+                    <li>Composable with monadic operations (map, and_then, etc.)</li>
+                </ul>
+            </div>
+
+            <pre><code class="language-cpp">// Result type implementation
+template&lt;typename T&gt;
+class Result {
+private:
+    std::variant&lt;T, Error&gt; value_;
+
+public:
+    bool IsOk() const { return std::holds_alternative&lt;T&gt;(value_); }
+    bool IsError() const { return !IsOk(); }
+    
+    const T&amp; GetValue() const { return std::get&lt;T&gt;(value_); }
+    const Error&amp; GetError() const { return std::get&lt;Error&gt;(value_); }
+    
+    // Monadic operations
+    template&lt;typename F&gt;
+    auto Map(F&amp;&amp; func) -&gt; Result&lt;decltype(func(GetValue()))&gt; {
+        if (IsOk()) {
+            return Result&lt;decltype(func(GetValue()))&gt;::Ok(func(GetValue()));
+        }
+        return Result&lt;decltype(func(GetValue()))&gt;::Err(GetError());
+    }
+};
+
+// Usage example
+Result&lt;EntityID&gt; PlaceComponent(ComponentType type, Vector3 position) {
+    // Validate input
+    if (!IsValidPosition(position)) {
+        return Result&lt;EntityID&gt;::Err(Error::InvalidPosition);
+    }
+    
+    // Perform operation
+    EntityID id = CreateEntity(type, position);
+    if (id == INVALID_ENTITY_ID) {
+        return Result&lt;EntityID&gt;::Err(Error::EntityCreationFailed);
+    }
+    
+    return Result&lt;EntityID&gt;::Ok(id);
+}</code></pre>
+
+            <h3>Error Type Design</h3>
+            <pre><code class="language-cpp">enum class ErrorCode {
+    // General errors
+    Success = 0,
+    UnknownError,
+    InvalidArgument,
+    OutOfMemory,
+    
+    // File I/O errors
+    FileNotFound,
+    FileAccessDenied,
+    FileCorrupted,
+    
+    // Scene errors
+    EntityNotFound,
+    InvalidEntityID,
+    ComponentNotFound,
+    
+    // Placement errors
+    InvalidPosition,
+    CollisionDetected,
+    SnappingFailed,
+    
+    // Rendering errors
+    VulkanInitFailed,
+    ShaderCompilationFailed,
+    BufferAllocationFailed
+};
+
+struct Error {
+    ErrorCode code;
+    std::string message;
+    std::string context;
+    
+    static Error FromCode(ErrorCode code) {
+        return Error{code, GetErrorMessage(code), ""};
+    }
+};</code></pre>
+        </section>
+
+        <section id="validation">
+            <h2>Input Validation</h2>
+            <p>Validate all inputs at API boundaries:</p>
+
+            <pre><code class="language-cpp">// Validation utilities
+namespace Validation {
+    bool IsValidPosition(const Vector3&amp; pos) {
+        return std::isfinite(pos.x) &amp;&amp; 
+               std::isfinite(pos.y) &amp;&amp; 
+               std::isfinite(pos.z);
+    }
+    
+    bool IsValidRotation(const Quaternion&amp; rot) {
+        float length = glm::length(rot);
+        return std::abs(length - 1.0f) &lt; 0.001f;
+    }
+    
+    bool IsValidEntityID(EntityID id) {
+        return id != INVALID_ENTITY_ID &amp;&amp; 
+               EntityManager::Instance().Exists(id);
+    }
+}</code></pre>
+        </section>
+
+        <section id="logging">
+            <h2>Logging Strategy</h2>
+            <p>Comprehensive logging for debugging and diagnostics:</p>
+
+            <pre><code class="language-cpp">enum class LogLevel {
+    Trace, Debug, Info, Warning, Error, Critical
+};
+
+class Logger {
+public:
+    static void Log(LogLevel level, const std::string&amp; message);
+    static void Error(const std::string&amp; msg) { Log(LogLevel::Error, msg); }
+};</code></pre>
+        </section>
+
+        <section id="summary">
+            <h2>Summary</h2>
+            <div class="card">
+                <h3>Key Decisions</h3>
+                <ul>
+                    <li>✓ Use Result&lt;T&gt; type for fallible operations</li>
+                    <li>✓ Validate all inputs at API boundaries</li>
+                    <li>✓ Never silently fail or ignore errors</li>
+                    <li>✓ Comprehensive logging at appropriate levels</li>
+                </ul>
+            </div>
+            <p><a href="05-asset-management.html" class="btn">Continue to Asset Management →</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p><strong>3D Map Editor MVP Guide - Version 9.0</strong></p>
+        <p>Page 4 of 35 | <a href="03-coordinate-system.html">Previous</a> | <a href="../index.html">Home</a> | <a href="05-asset-management.html">Next</a></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>
