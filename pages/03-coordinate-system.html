@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Coordinate System and Units - 3D Map Editor MVP Guide">
+    <title>Coordinate System and Units - 3D Map Editor MVP Guide</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="home-link">
+                <a href="../index.html">🏠 3D Map Editor MVP Guide</a>
+            </div>
+            <div class="nav-links">
+                <a href="02-foundational-considerations.html">← Previous: Foundational Considerations</a>
+                <a href="04-error-handling.html">Next: Error Handling →</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <h1>3. Coordinate System and Units</h1>
+
+        <section id="introduction">
+            <h2>Introduction</h2>
+            <p>The coordinate system is arguably the most fundamental decision in any 3D application. Every position, rotation, and transformation in your entire codebase depends on this choice. Getting it wrong means touching thousands of files to fix it later.</p>
+            
+            <div class="warning-box">
+                <strong>This decision is effectively permanent.</strong> While technically possible to change later, the cost is so high that it's almost never done. Choose carefully and document thoroughly.
+            </div>
+        </section>
+
+        <section id="our-decisions">
+            <h2>Our Coordinate System Decisions</h2>
+
+            <h3>Right-Handed Coordinate System</h3>
+            <p><strong>Decision:</strong> Use a right-handed coordinate system with:</p>
+            <ul>
+                <li><strong>+X axis:</strong> Right</li>
+                <li><strong>+Y axis:</strong> Up</li>
+                <li><strong>+Z axis:</strong> Forward (toward viewer)</li>
+            </ul>
+
+            <div class="info-box">
+                <strong>Rationale:</strong>
+                <ul>
+                    <li>Matches GLM (our math library) default</li>
+                    <li>Consistent with most modeling tools (Blender, 3ds Max with Y-up)</li>
+                    <li>Intuitive for architectural editing (Y-up feels natural for "height")</li>
+                    <li>Right-hand rule makes rotations intuitive</li>
+                </ul>
+            </div>
+
+            <pre><code class="language-cpp">// Coordinate system verification
+namespace CoordinateSystem {
+    // Axis definitions
+    constexpr glm::vec3 RIGHT   = glm::vec3(1.0f, 0.0f, 0.0f);  // +X
+    constexpr glm::vec3 UP      = glm::vec3(0.0f, 1.0f, 0.0f);  // +Y
+    constexpr glm::vec3 FORWARD = glm::vec3(0.0f, 0.0f, 1.0f);  // +Z
+    
+    // Verify right-handed system
+    static_assert(glm::dot(glm::cross(RIGHT, UP), FORWARD) > 0, 
+                  "Coordinate system must be right-handed");
+}</code></pre>
+
+            <h3>World Origin</h3>
+            <p><strong>Decision:</strong> World origin (0, 0, 0) represents the center of the ground plane.</p>
+            <ul>
+                <li>Ground plane at Y = 0</li>
+                <li>Buildings extend in +Y direction (upward)</li>
+                <li>Negative Y values are underground</li>
+            </ul>
+
+            <h3>Units of Measurement</h3>
+            <p><strong>Decision:</strong> Use meters for all distance measurements.</p>
+            
+            <div class="card">
+                <h4>Unit Standards</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Quantity</th>
+                            <th>Internal Unit</th>
+                            <th>Display Unit</th>
+                            <th>Conversion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Distance</td>
+                            <td>Meters (m)</td>
+                            <td>Meters or Feet</td>
+                            <td>1 ft = 0.3048 m</td>
+                        </tr>
+                        <tr>
+                            <td>Angles</td>
+                            <td>Radians</td>
+                            <td>Degrees</td>
+                            <td>π rad = 180°</td>
+                        </tr>
+                        <tr>
+                            <td>Time</td>
+                            <td>Seconds (s)</td>
+                            <td>Seconds</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Speed</td>
+                            <td>Meters/second</td>
+                            <td>m/s or ft/s</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <pre><code class="language-cpp">// Unit conversion utilities
+namespace Units {
+    // Distance
+    constexpr float METERS_TO_FEET = 3.28084f;
+    constexpr float FEET_TO_METERS = 0.3048f;
+    
+    inline float MetersToFeet(float meters) {
+        return meters * METERS_TO_FEET;
+    }
+    
+    inline float FeetToMeters(float feet) {
+        return feet * FEET_TO_METERS;
+    }
+    
+    // Angles
+    inline float RadiansToDegrees(float radians) {
+        return glm::degrees(radians);
+    }
+    
+    inline float DegreesToRadians(float degrees) {
+        return glm::radians(degrees);
+    }
+}
+
+// Example: Wall dimensions
+struct WallComponent {
+    float height = 2.7f;  // 2.7 meters (typical ceiling height)
+    float width = 3.0f;   // 3.0 meters
+    float thickness = 0.15f;  // 15 cm (typical interior wall)
+};</code></pre>
+
+            <h3>Rotation Representation</h3>
+            <p><strong>Decision:</strong></p>
+            <ul>
+                <li><strong>Internal:</strong> Quaternions for all rotation storage and calculations</li>
+                <li><strong>API/UI:</strong> Euler angles (degrees) for user-facing operations</li>
+            </ul>
+
+            <div class="info-box">
+                <strong>Why Quaternions Internally?</strong>
+                <ul>
+                    <li>No gimbal lock</li>
+                    <li>Efficient interpolation (SLERP)</li>
+                    <li>Compact representation (4 floats vs 9 for matrix)</li>
+                    <li>Industry standard for game engines</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <strong>Why Euler Angles for API/UI?</strong>
+                <ul>
+                    <li>Intuitive for humans ("rotate 90 degrees around Y")</li>
+                    <li>Easy to input and edit</li>
+                    <li>Familiar to users from other tools</li>
+                </ul>
+            </div>
+
+            <pre><code class="language-cpp">// Rotation handling
+class Transform {
+private:
+    glm::quat rotation_;  // Internal: quaternion
+    
+public:
+    // API: Set rotation using Euler angles (degrees)
+    void SetRotationEuler(float pitch, float yaw, float roll) {
+        rotation_ = glm::quat(glm::vec3(
+            glm::radians(pitch),
+            glm::radians(yaw),
+            glm::radians(roll)
+        ));
+    }
+    
+    // API: Get rotation as Euler angles (degrees)
+    glm::vec3 GetRotationEuler() const {
+        glm::vec3 eulerRadians = glm::eulerAngles(rotation_);
+        return glm::vec3(
+            glm::degrees(eulerRadians.x),
+            glm::degrees(eulerRadians.y),
+            glm::degrees(eulerRadians.z)
+        );
+    }
+    
+    // Internal: Get quaternion for calculations
+    const glm::quat&amp; GetRotationQuaternion() const {
+        return rotation_;
+    }
+};</code></pre>
+        </section>
+
+        <section id="consistency-rules">
+            <h2>Consistency Rules</h2>
+
+            <div class="tip-box">
+                <h3>Rules to Enforce</h3>
+                <ol>
+                    <li><strong>Always use meters internally</strong> - no mixing units in calculations</li>
+                    <li><strong>Convert at boundaries</strong> - only convert to display units at UI layer</li>
+                    <li><strong>Quaternions for storage</strong> - never store Euler angles except in UI state</li>
+                    <li><strong>Document coordinate space</strong> - every function that takes a position/vector should document whether it's in local, world, or view space</li>
+                    <li><strong>Use typed wrappers</strong> - consider using strong types to prevent unit mixing</li>
+                </ol>
+            </div>
+
+            <pre><code class="language-cpp">// Example: Strong typing for unit safety
+struct Meters {
+    float value;
+    explicit Meters(float v) : value(v) {}
+};
+
+struct Feet {
+    float value;
+    explicit Feet(float v) : value(v) {}
+};
+
+// Explicit conversion required
+Meters ToMeters(Feet feet) {
+    return Meters(feet.value * 0.3048f);
+}
+
+Feet ToFeet(Meters meters) {
+    return Feet(meters.value * 3.28084f);
+}
+
+// API usage
+void SetWallHeight(Meters height); // Clear what unit is expected
+// SetWallHeight(Feet(10.0f)); // Compilation error - must convert
+SetWallHeight(ToMeters(Feet(10.0f))); // Explicit and safe</code></pre>
+        </section>
+
+        <section id="common-pitfalls">
+            <h2>Common Pitfalls to Avoid</h2>
+
+            <div class="warning-box">
+                <h3>1. Mixing Degrees and Radians</h3>
+                <pre><code class="language-cpp">// WRONG - mixing degrees and radians
+float angle = 90.0f;  // Is this degrees or radians?
+glm::quat q = glm::quat(glm::vec3(0, angle, 0));  // Assumes radians!
+
+// CORRECT - explicit conversion
+float angleDegrees = 90.0f;
+float angleRadians = glm::radians(angleDegrees);
+glm::quat q = glm::quat(glm::vec3(0, angleRadians, 0));</code></pre>
+            </div>
+
+            <div class="warning-box">
+                <h3>2. Inconsistent Up Axis</h3>
+                <pre><code class="language-cpp">// WRONG - assuming Z-up in Y-up system
+void PlaceOnGround(Entity&amp; entity) {
+    entity.position.z = 0.0f;  // Wrong axis!
+}
+
+// CORRECT
+void PlaceOnGround(Entity&amp; entity) {
+    entity.position.y = 0.0f;  // Y is up in our system
+}</code></pre>
+            </div>
+
+            <div class="warning-box">
+                <h3>3. Storing Euler Angles</h3>
+                <pre><code class="language-cpp">// WRONG - storing Euler angles
+struct Transform {
+    glm::vec3 position;
+    glm::vec3 rotation;  // Euler angles - NO!
+};
+
+// CORRECT - store quaternion
+struct Transform {
+    glm::vec3 position;
+    glm::quat rotation;  // Quaternion - YES!
+};</code></pre>
+            </div>
+        </section>
+
+        <section id="testing-verification">
+            <h2>Testing and Verification</h2>
+            <p>Add tests to verify coordinate system consistency:</p>
+
+            <pre><code class="language-cpp">TEST(CoordinateSystemTest, AxisOrthogonality) {
+    // Verify axes are orthogonal
+    EXPECT_FLOAT_EQ(glm::dot(CoordinateSystem::RIGHT, CoordinateSystem::UP), 0.0f);
+    EXPECT_FLOAT_EQ(glm::dot(CoordinateSystem::UP, CoordinateSystem::FORWARD), 0.0f);
+    EXPECT_FLOAT_EQ(glm::dot(CoordinateSystem::FORWARD, CoordinateSystem::RIGHT), 0.0f);
+}
+
+TEST(CoordinateSystemTest, RightHandedness) {
+    // RIGHT x UP should equal FORWARD in right-handed system
+    glm::vec3 computed = glm::cross(CoordinateSystem::RIGHT, CoordinateSystem::UP);
+    EXPECT_NEAR(computed.x, CoordinateSystem::FORWARD.x, 0.001f);
+    EXPECT_NEAR(computed.y, CoordinateSystem::FORWARD.y, 0.001f);
+    EXPECT_NEAR(computed.z, CoordinateSystem::FORWARD.z, 0.001f);
+}
+
+TEST(UnitsTest, MetersFeetConversion) {
+    float meters = 10.0f;
+    float feet = Units::MetersToFeet(meters);
+    float backToMeters = Units::FeetToMeters(feet);
+    
+    EXPECT_NEAR(backToMeters, meters, 0.001f);
+}</code></pre>
+        </section>
+
+        <section id="documentation-requirements">
+            <h2>Documentation Requirements</h2>
+            <p>Every function dealing with spatial data should document:</p>
+
+            <pre><code class="language-cpp">/**
+ * Places a component at the specified position
+ * @param position World-space position in meters
+ * @param rotation Quaternion representing world-space orientation
+ * @return Result containing entity ID or error
+ */
+Result&lt;EntityID&gt; PlaceComponent(
+    const glm::vec3&amp; position,
+    const glm::quat&amp; rotation
+);
+
+/**
+ * Converts world-space position to screen coordinates
+ * @param worldPos Position in world space (meters)
+ * @param camera Camera used for projection
+ * @return Screen coordinates in pixels, origin at top-left
+ */
+glm::vec2 WorldToScreen(
+    const glm::vec3&amp; worldPos,
+    const Camera&amp; camera
+);</code></pre>
+        </section>
+
+        <section id="summary">
+            <h2>Summary</h2>
+            <div class="card">
+                <h3>Key Decisions</h3>
+                <ul>
+                    <li>✓ Right-handed coordinate system (+X right, +Y up, +Z forward)</li>
+                    <li>✓ World origin at ground plane center (Y=0)</li>
+                    <li>✓ Meters for all internal distances</li>
+                    <li>✓ Radians for internal angles, degrees for API/UI</li>
+                    <li>✓ Quaternions for storage, Euler angles for user interaction</li>
+                </ul>
+            </div>
+
+            <p><a href="04-error-handling.html" class="btn">Continue to Error Handling and Validation →</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p><strong>3D Map Editor MVP Guide - Version 9.0</strong></p>
+        <p>Page 3 of 35 | <a href="02-foundational-considerations.html">Previous</a> | <a href="../index.html">Home</a> | <a href="04-error-handling.html">Next</a></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>
