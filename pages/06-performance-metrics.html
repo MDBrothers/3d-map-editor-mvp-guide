@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Performance Metrics and Profiling - 3D Map Editor MVP Guide">
+    <title>Performance Metrics - 3D Map Editor MVP Guide</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="home-link"><a href="../index.html">🏠 3D Map Editor MVP Guide</a></div>
+            <div class="nav-links">
+                <a href="05-asset-management.html">← Previous</a>
+                <a href="07-settings-management.html">Next →</a>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <h1>6. Performance Metrics and Profiling</h1>
+        <section id="introduction">
+            <h2>Introduction</h2>
+            <p>Performance monitoring must be built in from day one. Establish baselines early and track metrics continuously throughout development.</p>
+        </section>
+        <section id="metrics">
+            <h2>Key Performance Metrics</h2>
+            <div class="card">
+                <h3>Target Metrics for MVP</h3>
+                <ul>
+                    <li><strong>Frame Rate:</strong> Maintain 60 FPS (16.67ms per frame)</li>
+                    <li><strong>Frame Time Budget:</strong> &lt;12ms for game logic, &lt;4ms for rendering</li>
+                    <li><strong>Memory Usage:</strong> &lt;512MB for typical scene (100 components)</li>
+                    <li><strong>Load Time:</strong> &lt;3 seconds for scene with 1000 components</li>
+                    <li><strong>Input Latency:</strong> &lt;50ms from input to visual feedback</li>
+                </ul>
+            </div>
+            <pre><code class="language-cpp">// Performance tracking system
+class PerformanceMonitor {
+public:
+    void BeginFrame();
+    void EndFrame();
+    
+    float GetAverageFPS() const;
+    float GetAverageFrameTime() const;
+    size_t GetMemoryUsage() const;
+    
+    struct FrameStats {
+        float frameTime;
+        float updateTime;
+        float renderTime;
+        size_t drawCalls;
+        size_t triangles;
+    };
+    
+    FrameStats GetLastFrameStats() const;
+};</code></pre>
+        </section>
+        <section id="profiling">
+            <h2>Profiling Strategy</h2>
+            <p>Use scoped profiling markers for easy performance analysis:</p>
+            <pre><code class="language-cpp">class ScopedProfiler {
+public:
+    ScopedProfiler(const char* name);
+    ~ScopedProfiler();
+};
+
+#define PROFILE_SCOPE(name) ScopedProfiler _profiler##__LINE__(name)
+
+void Update() {
+    PROFILE_SCOPE("Update");
+    // ... update logic
+}
+
+void Render() {
+    PROFILE_SCOPE("Render");
+    // ... rendering code
+}</code></pre>
+        </section>
+        <section id="summary">
+            <h2>Summary</h2>
+            <div class="card">
+                <ul>
+                    <li>✓ Target 60 FPS minimum for smooth interaction</li>
+                    <li>✓ Built-in performance monitoring from day one</li>
+                    <li>✓ Scoped profiling for identifying bottlenecks</li>
+                </ul>
+            </div>
+            <p><a href="07-settings-management.html" class="btn">Continue to Settings Management →</a></p>
+        </section>
+    </main>
+    <footer>
+        <p><strong>3D Map Editor MVP Guide - Version 9.0</strong></p>
+        <p>Page 6 of 35 | <a href="05-asset-management.html">Previous</a> | <a href="../index.html">Home</a> | <a href="07-settings-management.html">Next</a></p>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>
